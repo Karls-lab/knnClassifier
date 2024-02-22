@@ -5,7 +5,6 @@ from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import f1_score
 from sklearn.metrics import make_scorer
-import os
 
 
 class KNNClassifier:
@@ -13,6 +12,7 @@ class KNNClassifier:
         self.k = k
         self.p = p
 
+    # Fit, get_params, and set_params are required for GridSearchCV
     def fit(self, X_train, y_train):
         self.X_train = X_train
         self.y_train = y_train
@@ -25,7 +25,7 @@ class KNNClassifier:
             setattr(self, param, value)
         return self
 
-
+    # Main function to run KNN
     def predict(self, X_test):
         predictions = []
         for i, x in X_test.iterrows():
@@ -39,6 +39,7 @@ class KNNClassifier:
         return predictions
 
 
+# Setup the KNN model, 
 def trainKNN(X_train, y_train, k, p):
     knn = KNNClassifier(k=k, p=p)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
