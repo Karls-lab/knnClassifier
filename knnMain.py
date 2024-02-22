@@ -1,7 +1,12 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import f1_score
+from sklearn.metrics import make_scorer
+import os
+
 
 class KNNClassifier:
     def __init__(self, k=3, p=2):
@@ -11,6 +16,15 @@ class KNNClassifier:
     def fit(self, X_train, y_train):
         self.X_train = X_train
         self.y_train = y_train
+
+    def get_params(self, deep=True):
+        return {'k': self.k, 'p': self.p}
+
+    def set_params(self, **params):
+        for param, value in params.items():
+            setattr(self, param, value)
+        return self
+
 
     def predict(self, X_test):
         predictions = []
@@ -22,34 +36,53 @@ class KNNClassifier:
             unique_labels, counts = np.unique(nearest_labels, return_counts=True)
             most_common_label = unique_labels[np.argmax(counts)]
             predictions.append(most_common_label)
-
-
         return predictions
 
-df = pd.read_csv('cleveland_cleaned.csv')
-df_train = pd.DataFrame(df)
-features = list(df_train.columns[:-1])
-X_train = df_train[features]
-y_train = df_train['num']
-# print(X_train)
-# print(y_train)
 
 def trainKNN(X_train, y_train, k, p):
-    # take 80% of the data as training data and 20% as testing data
-    X_train, X_test, y_train, y_test = train_test_split(df_train.drop('num', axis=1), df_train['num'], test_size=0.2, random_state=42)
-
     knn = KNNClassifier(k=k, p=p)
+    X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    # Calculate the F1 score for each fold in k-fold cross-validation
+    scorer = make_scorer(f1_score, average='weighted')
+    scores = cross_val_score(knn, X_train, y_train, cv=10, scoring=scorer)
+    # Calculate the confusion matrix to get the percent correct and recall
     knn.fit(X_train, y_train)
-    predictions = knn.predict(X_test)
+    y_pred = knn.predict(X_test)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    percent_correct = np.trace(conf_matrix) / np.sum(conf_matrix)
+    recall = np.diag(conf_matrix) / np.sum(conf_matrix, axis=1)
+    return scores.mean(), percent_correct, recall
 
-    f1 = f1_score(y_test, predictions)
-    return f1
 
-scores = {}
-for k in range(1, 20):
-    for p in np.linspace(1, 2, 10):
-        scores[(k, p)] = trainKNN(X_train, y_train, k, p)
+"""
+Main functions to train the KNN with grid search to find optimal values.
+"""
+def runKNN(filePath, targetColumn='target'):
+    # Load the dataframe and the features and target
+    # filePath = os.path.join(os.path.dirname(__file__), 'heartDisease', 'cleveland_cleaned.csv')
+    df = pd.read_csv(filePath)
+    df_train = pd.DataFrame(df)
+    features = list(df_train.columns[:-1])
+    X_train = df_train[features]
+    y_train = df_train[targetColumn]
 
-top_kp = sorted(scores, key=scores.get, reverse=True)[:5]
-for kp in top_kp:
-    print(f'k={kp[0]}, p={kp[1]}: f1={scores[kp]:.4f}')
+    # Create a scorer for the grid search. We will use the F1 score
+    scorer = make_scorer(f1_score, average='weighted')
+    param_grid = {
+        'k': range(1, 20),
+        'p': np.linspace(1, 2, 5)
+    }
+
+    # Perform a grid search to find the best k and p
+    grid_search = GridSearchCV(KNNClassifier(), param_grid, scoring=scorer, cv=10)
+    grid_search.fit(X_train, y_train)
+    print(f'Best parameters: {grid_search.best_params_}')
+    print(f'Best score: {grid_search.best_score_}\n')
+
+    # Train the KNN model with the best k and p
+    best_k = grid_search.best_params_['k']
+    best_p = grid_search.best_params_['p']
+    mean_score, percent_correct, recall = trainKNN(X_train, y_train, best_k, best_p)
+    print(f'Mean score: {mean_score}')
+    print(f'Percent correct: {percent_correct}')
+    print(f'Recall: {recall}')

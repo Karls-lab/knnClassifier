@@ -13,7 +13,8 @@ Discrete Variables:
     fbs: Fasting blood sugar > 120 mg/dl (1 = true, 0 = false).
     restecg: Resting electrocardiographic results, with three discrete values indicating different abnormalities.
     exang: Exercise-induced angina (1 = yes, 0 = no).
-    slope: The slope of the peak exercise ST segment, with three discrete values representing different patterns.
+    slope: The slope of the peak exercise ST segment, 
+        with three discrete values representing different patterns.
     ca: Number of major vessels (0-3) colored by fluoroscopy.
     thal: A categorical variable with three discrete values representing different types of thalassemia (normal, fixed defect, reversible defect).
     num: Diagnosis of heart disease, with discrete values indicating the presence or absence of heart disease.
