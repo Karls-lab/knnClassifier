@@ -49,10 +49,12 @@ def trainKNN(X_train, y_train, k, p):
     # Calculate the confusion matrix to get the percent correct and recall
     knn.fit(X_train, y_train)
     y_pred = knn.predict(X_test)
-    conf_matrix = confusion_matrix(y_test, y_pred)
-    percent_correct = np.trace(conf_matrix) / np.sum(conf_matrix)
-    recall = np.diag(conf_matrix) / np.sum(conf_matrix, axis=1)
-    return scores.mean(), percent_correct, recall
+    # conf_matrix = confusion_matrix(y_test, y_pred)
+    # percent_correct = np.trace(conf_matrix) / np.sum(conf_matrix)
+    # recall = np.diag(conf_matrix) / np.sum(conf_matrix, axis=1)
+    # return scores.mean(), percent_correct, recall
+    precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, average='weighted')
+    return scores.mean(), precision, fscore 
 
 
 """
@@ -83,7 +85,7 @@ def runKNN(filePath, targetColumn='target'):
     # Train the KNN model with the best k and p
     best_k = grid_search.best_params_['k']
     best_p = grid_search.best_params_['p']
-    mean_score, percent_correct, recall = trainKNN(X_train, y_train, best_k, best_p)
+    mean_score, percent_correct, fscore = trainKNN(X_train, y_train, best_k, best_p)
     print(f'Mean score: {mean_score}')
     print(f'Percent correct: {percent_correct}')
-    print(f'Recall: {recall}')
+    print(f'fscore: {fscore}')
