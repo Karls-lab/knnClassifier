@@ -1,0 +1,6 @@
+Best Scores
+top 10 features: 0.83
+top 9 features: 0.844
+top 8 features: 0.841
+top 7 features: 0.839
+top 6 features: 0.785

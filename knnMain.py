@@ -39,7 +39,7 @@ class KNNClassifier:
         return predictions
 
 
-# Setup the KNN model, 
+# Setup the KNN model, split into training, cross validation with f1.
 def trainKNN(X_train, y_train, k, p):
     knn = KNNClassifier(k=k, p=p)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
@@ -58,7 +58,6 @@ Main functions to train the KNN with grid search to find optimal values.
 """
 def runKNN(filePath, targetColumn='target'):
     # Load the dataframe and the features and target
-    # filePath = os.path.join(os.path.dirname(__file__), 'heartDisease', 'cleveland_cleaned.csv')
     df = pd.read_csv(filePath)
     df_train = pd.DataFrame(df)
     features = list(df_train.columns[:-1])
