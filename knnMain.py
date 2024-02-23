@@ -81,6 +81,6 @@ def runKNN(filePath, targetColumn='target'):
     best_k = grid_search.best_params_['k']
     best_p = grid_search.best_params_['p']
     mean_score, percent_correct, fscore = trainKNN(X_train, y_train, best_k, best_p)
-    print(f'Mean score: {mean_score}')
+    print(f'Mean score of cross Validation: {mean_score}')
     print(f'Percent correct: {percent_correct}')
-    print(f'fscore: {fscore}')
+    print(f'fscore on train/split: {fscore}')
