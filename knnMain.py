@@ -40,16 +40,19 @@ class KNNClassifier:
 
 
 # Setup the KNN model, split into training, cross validation with f1.
-def trainKNN(X_train, y_train, k, p):
+def trainKNN(X_train, y_train, k, p, split=True):
     knn = KNNClassifier(k=k, p=p)
-    X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
-    # Calculate the F1 score for each fold in k-fold cross-validation
+    if split: # split if doing k-fold cross-validation
+        X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+
+    # Use f1 score for cross validation
     scorer = make_scorer(f1_score, average='weighted')
     scores = cross_val_score(knn, X_train, y_train, cv=10, scoring=scorer)
-    # Calculate the confusion matrix to get the percent correct and recall
+
+    # Train the model and get the precision, recall, and fscore
     knn.fit(X_train, y_train)
-    y_pred = knn.predict(X_test)
-    precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, average='weighted')
+    y_pred = knn.predict(X_train)
+    precision, recall, fscore, support = precision_recall_fscore_support(y_train, y_pred, average='weighted')
     return scores.mean(), precision, fscore 
 
 
@@ -80,7 +83,7 @@ def runKNN(filePath, targetColumn='target'):
     # Train the KNN model with the best k and p
     best_k = grid_search.best_params_['k']
     best_p = grid_search.best_params_['p']
-    mean_score, percent_correct, fscore = trainKNN(X_train, y_train, best_k, best_p)
+    mean_score, percent_correct, fscore = trainKNN(X_train, y_train, best_k, best_p, split=False)
     print(f'Mean score of cross Validation: {mean_score}')
     print(f'Percent correct: {percent_correct}')
     print(f'fscore on train/split: {fscore}')
