@@ -77,13 +77,12 @@ def runKNN(filePath, targetColumn='target'):
     # Perform a grid search to find the best k and p
     grid_search = GridSearchCV(KNNClassifier(), param_grid, scoring=scorer, cv=10)
     grid_search.fit(X_train, y_train)
-    print(f'Best parameters: {grid_search.best_params_}')
-    print(f'Best score: {grid_search.best_score_}\n')
 
     # Train the KNN model with the best k and p
     best_k = grid_search.best_params_['k']
     best_p = grid_search.best_params_['p']
     mean_score, percent_correct, fscore = trainKNN(X_train, y_train, best_k, best_p, split=False)
+    print(f'Best parameters: {grid_search.best_params_}')
     print(f'Mean f1-score with cross Validation: {mean_score}')
     print(f'Percent correct: {percent_correct}')
     print(f'f1-score: {fscore}')
